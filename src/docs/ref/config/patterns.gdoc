@@ -1,0 +1,28 @@
+h1. Patterns
+
+The plugin does a search for a specific pattern at the application's startup...
+# All your DAOs must end with @*Dao.groovy@;
+# If you have a specific DAO, for Oracle in this case, write @*OracleDao.groovy@;
+# Add *all* your DAOs inside @grails-app/daos@ folder.
+
+... and registers the beans. For example...
+
+{code}
+class PersonDao {
+	// ANSI SQL here
+}
+
+class PersonOracleDao extends PersonDao {
+	// Instructions for Oracle
+}
+
+class PersonPostgresDao extends PersonDao {
+	// Instructions for PostgreSQL
+}
+{code}
+
+... will register a bean named @personDao@ with the right implementation.
+
+{note}
+	Take a look in [configuration|config] for figure out how to define the datasources types.
+{note}

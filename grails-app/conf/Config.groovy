@@ -22,3 +22,5 @@ log4j = {
 
 	warn   'org.mortbay.log'
 }
+
+grails.doc.authors="Lauro L. V. Becker | lauro.becker at gmail dot com" 

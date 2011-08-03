@@ -1,0 +1,55 @@
+Imagine that you've been hired for maintain an old system written with Struts 1.
+When I say old, I mean *very old*, so no ORM mapping still exists. All you have is a lot
+of DAOs, using DAOFactory pattern.
+
+This system is written for working with a couple of databases - 
+pretend they are PostgreSQL and Oracle. So you have a parent DAO, who has the 
+ANSI statements, and one child per database. These DAOs will call procedures and functions from the database -
+even if you want, no ORM will solve this problem. :(
+
+For illustration purposes, let's say we have:
+
+{code}
+interface PersonDaoIntf {}
+
+class PersonDao implements PersonDaoInft {
+	// ANSI SQL here
+}
+
+class PersonOracleDao extends PersonDao {
+	// Instructions for Oracle
+}
+
+class PersonPostgresDao extends PersonDao {
+	// Instructions for PostgreSQL
+}
+
+abstract class DaoFactory {
+	public static DaoFactory getDaoFactory() {
+		// pretend...
+		switch(dbType)
+			case ORACLE: return new OracleDaoFactory();
+			case POSTGRES: return new PostgresDaoFactory();
+		}
+		
+		throw new ...;
+	}
+
+	abstract PersonDaoIntf getPersonDao();
+}
+
+class OracleDaoFactory extends DaoFactory {
+	PersonDaoIntf getPersonDao() {
+		return new PersonOracleDao();
+	}
+}
+
+class PostgresDaoFactory extends DaoFactory {
+	PersonDaoIntf getPersonDao() {
+		return new PersonPostgresDao();
+	}
+}
+{code}
+
+If you are accustomed with the clarity of Grails, you should be thinking that it is a lot of code.
+Sure it is!

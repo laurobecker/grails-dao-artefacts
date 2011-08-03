@@ -1,0 +1,18 @@
+The plugin do a search for the specified pattern at the application startup.
+All those files will be registered as Spring Beans. For example:
+
+{code}
+interface PersonDaoIntf {}
+
+class PersonDao implements PersonDaoInft {
+	// ANSI SQL here
+}
+
+class PersonOracleDao extends PersonDao {
+	// Instructions for Oracle
+}
+
+class PersonPostgresDao extends PersonDao {
+	// Instructions for PostgreSQL
+}
+{code}

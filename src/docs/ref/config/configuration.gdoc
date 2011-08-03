@@ -1,0 +1,12 @@
+h1. Configuration
+
+In your @Config.groovy@ add the following lines:
+
+{code}
+grails.plugins.daoartefacts.datasource.name = "Oracle"
+grails.plugins.daoartefacts.datasource.all = ["Oracle", "Postgres"]
+{code}
+
+The first one means the actual datasource type. The second is a list with all known
+types. In this case, the plugin will understand that Oracle and Postgres will, sometimes, 
+reside in yours class names.
