@@ -1,3 +1,5 @@
+import grails.spring.BeanBuilder;
+
 import java.lang.reflect.Method
 
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
@@ -10,9 +12,10 @@ import org.springframework.transaction.annotation.Transactional
 
 import br.com.organicadigital.daoartefacts.DaoArtefactClass
 import br.com.organicadigital.daoartefacts.DaoArtefactHandler
+import br.com.organicadigital.daoartefacts.DaoArtefactResourcesHandler;
 
 class DaoArtefactsGrailsPlugin {
-	def version = "0.1"
+	def version = "0.2"
 	def grailsVersion = "1.3.7 > *"
 	def dependsOn = [:]
 	def loadAfter = ["hibernate"]
@@ -28,13 +31,17 @@ class DaoArtefactsGrailsPlugin {
 
 	def documentation = "http://grails.org/plugin/dao-artefacts"
 
-	def artefacts = [DaoArtefactHandler]
+	def artefacts = [DaoArtefactHandler, DaoArtefactResourcesHandler]
 
 	def watchedResources = [
 		"file:./grails-app/daos/**/*Dao.groovy",
-		"file:../../plugins/*/daos/**/*Dao.groovy"
+		"file:../../plugins/*/daos/**/*Dao.groovy",
+		"file:./grails-app/conf/**/*DaoArtefactResources.groovy",
+		"file:../../plugins/*/conf/**/*DaoArtefactResources.groovy"
 	]
 
+	private def daoFactory;
+	
 	/**
 	 * 
 	 */
@@ -47,7 +54,7 @@ class DaoArtefactsGrailsPlugin {
 		for (daoClass in application.daoArtefactClasses) {
 			String beanName = daoClass.propertyName;
 			if (otherDsBean(beanName)) {
-				break;
+				continue;
 			}
 
 			Boolean specific = false;
@@ -69,6 +76,11 @@ class DaoArtefactsGrailsPlugin {
 		}
 
 		beanNames.each { String name, DaoArtefactClass daoClass ->
+			def fctClass = getDaoFactory(application)?."$name";
+			if(fctClass) {
+				daoClass = application.addArtefact(DaoArtefactHandler.TYPE, fctClass);
+			}
+			
 			def scope = daoClass.getPropertyValue("scope");
 			"${daoClass.fullName}DaoClass"(MethodInvokingFactoryBean) { bean ->
 				bean.lazyInit = true
@@ -109,12 +121,17 @@ class DaoArtefactsGrailsPlugin {
 				}
 			}
 		}
+		
+		
+		
 	}
 
 	/**
 	 *
 	 */
 	def onChange = { event ->
+		daoFactory = null;
+		
 		if (!event.source || !event.ctx) {
 			return
 		}
@@ -241,5 +258,27 @@ class DaoArtefactsGrailsPlugin {
 		}
 
 		return otherDao
+	}
+	
+	/**
+	 * 
+	 */
+	private def getDaoFactory(application) {
+		if (!daoFactory) {
+			ConfigSlurper confSlurper = new ConfigSlurper();
+			def beansConf = null;
+			for (daoResourcesClass in application.daoArtefactResourcesClasses) {
+				def confB = confSlurper.parse(daoResourcesClass.clazz);
+				if (!beansConf) {
+					beansConf = confB;
+				} else {
+					beansConf = beansConf.merge(confB);
+				}
+			}
+	
+			daoFactory = beansConf;
+		}
+		
+		return daoFactory;
 	}
 }
