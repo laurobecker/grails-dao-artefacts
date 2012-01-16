@@ -4,5 +4,5 @@
 /.classpath
 /target
 /web-app/WEB-INF/classes
-/grails-dao-artefacts-0.1.zip
+/grails-dao-artefacts-*.zip*
 /plugin.xml

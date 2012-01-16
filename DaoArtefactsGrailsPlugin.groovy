@@ -1,7 +1,8 @@
-import grails.spring.BeanBuilder;
+import groovy.sql.Sql
 
 import java.lang.reflect.Method
 
+import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.DefaultGrailsClass
 import org.codehaus.groovy.grails.commons.spring.TypeSpecifyableTransactionProxyFactoryBean
@@ -12,10 +13,10 @@ import org.springframework.transaction.annotation.Transactional
 
 import br.com.organicadigital.daoartefacts.DaoArtefactClass
 import br.com.organicadigital.daoartefacts.DaoArtefactHandler
-import br.com.organicadigital.daoartefacts.DaoArtefactResourcesHandler;
+import br.com.organicadigital.daoartefacts.DaoArtefactResourcesHandler
 
 class DaoArtefactsGrailsPlugin {
-	def version = "0.2"
+	def version = "0.3.9"
 	def grailsVersion = "1.3.7 > *"
 	def dependsOn = [:]
 	def loadAfter = ["hibernate"]
@@ -26,12 +27,14 @@ class DaoArtefactsGrailsPlugin {
 	def author = "Lauro L. V. Becker"
 	def authorEmail = "lauro.becker@gmail.com"
 	def title = "Dao Artefacts"
-	def description = '''\\
-'''
+	def description = "Provides a way of using DAOs in Grails applications."
 
 	def documentation = "http://grails.org/plugin/dao-artefacts"
 
-	def artefacts = [DaoArtefactHandler, DaoArtefactResourcesHandler]
+	def artefacts = [
+		DaoArtefactHandler,
+		DaoArtefactResourcesHandler
+	]
 
 	def watchedResources = [
 		"file:./grails-app/daos/**/*Dao.groovy",
@@ -41,7 +44,7 @@ class DaoArtefactsGrailsPlugin {
 	]
 
 	private def daoFactory;
-	
+
 	/**
 	 * 
 	 */
@@ -80,7 +83,7 @@ class DaoArtefactsGrailsPlugin {
 			if(fctClass) {
 				daoClass = application.addArtefact(DaoArtefactHandler.TYPE, fctClass);
 			}
-			
+
 			def scope = daoClass.getPropertyValue("scope");
 			"${daoClass.fullName}DaoClass"(MethodInvokingFactoryBean) { bean ->
 				bean.lazyInit = true
@@ -110,8 +113,7 @@ class DaoArtefactsGrailsPlugin {
 					transactionAttributeSource = new GroovyAwareNamedTransactionAttributeSource(transactionalAttributes:props)
 					transactionManager = ref("transactionManager")
 				}
-			}
-			else {
+			} else {
 				"${name}"(daoClass.getClazz()) { bean ->
 					bean.autowire =  true
 					bean.lazyInit = true
@@ -120,10 +122,9 @@ class DaoArtefactsGrailsPlugin {
 					}
 				}
 			}
+
+			injectDynamicMethods(daoClass)
 		}
-		
-		
-		
 	}
 
 	/**
@@ -131,7 +132,7 @@ class DaoArtefactsGrailsPlugin {
 	 */
 	def onChange = { event ->
 		daoFactory = null;
-		
+
 		if (!event.source || !event.ctx) {
 			return
 		}
@@ -186,8 +187,7 @@ class DaoArtefactsGrailsPlugin {
 				}
 			}
 			beans.registerBeans(event.ctx)
-		}
-		else {
+		} else {
 			def beans = beans {
 				"$daoName"(daoClass.getClazz()) { bean ->
 					bean.autowire =  true
@@ -197,6 +197,19 @@ class DaoArtefactsGrailsPlugin {
 				}
 			}
 			beans.registerBeans(event.ctx)
+		}
+
+		injectDynamicMethods(daoClass)
+	}
+
+	/**
+	 * @param daoClass
+	 */
+	void injectDynamicMethods(DaoArtefactClass daoClass) {
+		daoClass.metaClass.getSql = { new Sql(ApplicationHolder.getApplication().getMainContext().getBean("dataSource")) }
+
+		daoClass.metaClass.methodMissing = { String methodName, args ->
+			sql.invokeMethod(methodName, args)
 		}
 	}
 
@@ -259,7 +272,7 @@ class DaoArtefactsGrailsPlugin {
 
 		return otherDao
 	}
-	
+
 	/**
 	 * 
 	 */
@@ -275,10 +288,10 @@ class DaoArtefactsGrailsPlugin {
 					beansConf = beansConf.merge(confB);
 				}
 			}
-	
+
 			daoFactory = beansConf;
 		}
-		
+
 		return daoFactory;
 	}
 }

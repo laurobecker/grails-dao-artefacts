@@ -1,4 +1,4 @@
-The plugin do a search for the specified pattern at the application startup.
+The plugin looks for the specified pattern in application startup.
 All those files will be registered as Spring Beans. For example:
 
 {code}
@@ -16,3 +16,41 @@ class PersonPostgresDao extends PersonDao {
 	// Instructions for PostgreSQL
 }
 {code}
+
+A DAO behaves very similar to a Service. Actually they are like Services, but should only have Data Access methods. 
+Having it in mind, you can inject it like any other bean.
+
+The big trick here is that, if you configured your application to use Oracle, only *OracleDao instances will be registered. But
+your Service doens't have to know what kind of DataBase you are using, so inject only with...
+
+{code}
+class PersonService {
+	def personDao // Oracle or Postgres DAO, depending on the configuration
+	
+	void foo() {
+		personDao.foo()
+	}
+}
+{code}
+
+h2. Available Methods
+
+For convenience, a method @getSql()@, that returns an instance of @[groovy.sql.Sql|http://groovy.codehaus.org/api/groovy/sql/Sql.html]@, 
+is present and can be used for querying. 
+
+You can also just use all methods from @[groovy.sql.Sql|http://groovy.codehaus.org/api/groovy/sql/Sql.html]@ without using the SQL object:
+
+{code}
+class PersonOracleDao extends PersonDao {
+	void foo() {
+		String query = "select * from foo"
+		getSql().execute(query) // or...
+		sql.execute(query) // or...
+		execute(query)
+	}
+}
+{code}
+
+{note}
+All methods are transactional.
+{note}

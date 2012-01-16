@@ -2,5 +2,5 @@ That working with database using Grails is very trivial, everybody knows.
 You just have to write some domain mappings here, change some connection configurations there, and everything works like a charm.
 
 But, well, sometimes we have to do some additional coding around the conventions and we do need write some SQL instructions for 
-certain kinds of databases. Those things commonly happens when you're working with legacy systems. 
-The best approach, with no doubt, would be to map everything as domain classes, and take all Grails' advantages. But it's not always possible.
+certain kinds of databases. Those things commonly happen when you're working with legacy systems. 
+The best approach, with no doubt, would be to map everything as domain classes, and take all Grails advantages. But it's not always possible.

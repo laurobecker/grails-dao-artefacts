@@ -4,8 +4,7 @@ of DAOs, using DAOFactory pattern.
 
 This system is written for working with a couple of databases - 
 pretend they are PostgreSQL and Oracle. So you have a parent DAO, who has the 
-ANSI statements, and one child per database. These DAOs will call procedures and functions from the database -
-even if you want, no ORM will solve this problem. :(
+ANSI statements, and one child per database. These DAOs will call procedures and functions from the database.
 
 For illustration purposes, let's say we have:
 
