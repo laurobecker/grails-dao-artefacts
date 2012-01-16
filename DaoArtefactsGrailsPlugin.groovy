@@ -29,7 +29,7 @@ class DaoArtefactsGrailsPlugin {
 	def title = "Dao Artefacts"
 	def description = "Provides a way of using DAOs in Grails applications."
 
-	def documentation = "http://grails.org/plugin/dao-artefacts"
+	def documentation = "http://laurobecker.com.br/dao-artefacts/docs/"
 
 	def artefacts = [
 		DaoArtefactHandler,
