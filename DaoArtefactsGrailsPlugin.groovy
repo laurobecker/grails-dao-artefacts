@@ -1,6 +1,8 @@
 import groovy.sql.Sql
 
 import java.lang.reflect.Method
+import java.util.logging.Level
+import java.util.logging.Logger
 
 import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
@@ -14,9 +16,10 @@ import org.springframework.transaction.annotation.Transactional
 import br.com.organicadigital.daoartefacts.DaoArtefactClass
 import br.com.organicadigital.daoartefacts.DaoArtefactHandler
 import br.com.organicadigital.daoartefacts.DaoArtefactResourcesHandler
+import br.com.organicadigital.daoartefacts.SqlHandler
 
 class DaoArtefactsGrailsPlugin {
-	def version = "0.3.9"
+	def version = "0.4"
 	def grailsVersion = "1.3.7 > *"
 	def dependsOn = [:]
 	def loadAfter = ["hibernate"]
@@ -52,6 +55,10 @@ class DaoArtefactsGrailsPlugin {
 		xmlns tx:"http://www.springframework.org/schema/tx"
 		tx.'annotation-driven'('transaction-manager' : 'transactionManager')
 
+		Logger sqlLogger = Logger.getLogger(Sql.class.getName())
+		sqlLogger.addHandler(new SqlHandler());
+		sqlLogger.setLevel(Level.FINE)
+		
 		Map<String, DaoArtefactClass> beanNames = new HashMap<String, DaoArtefactClass>();
 		String dsName = getDataSourceName();
 		for (daoClass in application.daoArtefactClasses) {
