@@ -19,7 +19,7 @@ import br.com.organicadigital.daoartefacts.DaoArtefactResourcesHandler
 import br.com.organicadigital.daoartefacts.SqlHandler
 
 class DaoArtefactsGrailsPlugin {
-	def version = "0.4"
+	def version = "0.6"
 	def grailsVersion = "1.3.7 > *"
 	def dependsOn = [:]
 	def loadAfter = ["hibernate"]
@@ -216,7 +216,9 @@ class DaoArtefactsGrailsPlugin {
 		daoClass.metaClass.getSql = { new Sql(ApplicationHolder.getApplication().getMainContext().getBean("dataSource")) }
 
 		daoClass.metaClass.methodMissing = { String methodName, args ->
-			sql.invokeMethod(methodName, args)
+			Sql s = getSql()
+			s.invokeMethod(methodName, args)
+			s.close()
 		}
 	}
 
