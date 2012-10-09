@@ -19,8 +19,8 @@ import br.com.organicadigital.daoartefacts.DaoArtefactResourcesHandler
 import br.com.organicadigital.daoartefacts.SqlHandler
 
 class DaoArtefactsGrailsPlugin {
-	def version = "0.6"
-	def grailsVersion = "1.3.7 > *"
+	def version = "0.7"
+	def grailsVersion = "2.0.4 > *"
 	def dependsOn = [:]
 	def loadAfter = ["hibernate"]
 	def pluginExcludes = [
@@ -104,6 +104,8 @@ class DaoArtefactsGrailsPlugin {
 
 			def hasDataSource = (application.config?.dataSource || application.domainClasses)
 			if (hasDataSource && shouldCreateTransactionalProxy(daoClass)) {
+				String datasourceName = daoClass.datasource
+				String suffix = datasourceName == DaoArtefactClass.DEFAULT_DATA_SOURCE ? '' : "_$datasourceName"
 				def props = new Properties()
 				props."*" = "PROPAGATION_REQUIRED"
 				"${name}"(TypeSpecifyableTransactionProxyFactoryBean, daoClass.clazz) { bean ->
@@ -118,7 +120,7 @@ class DaoArtefactsGrailsPlugin {
 					}
 					proxyTargetClass = true
 					transactionAttributeSource = new GroovyAwareNamedTransactionAttributeSource(transactionalAttributes:props)
-					transactionManager = ref("transactionManager")
+					transactionManager = ref("transactionManager$suffix")
 				}
 			} else {
 				"${name}"(daoClass.getClazz()) { bean ->
@@ -168,7 +170,10 @@ class DaoArtefactsGrailsPlugin {
 		}
 
 		def scope = daoClass.getPropertyValue("scope");
-		if (shouldCreateTransactionalProxy(daoClass) && event.ctx.containsBean("transactionManager")) {
+		String datasourceName = daoClass.datasource
+		String suffix = datasourceName == DaoArtefactClass.DEFAULT_DATA_SOURCE ? '' : "_$datasourceName"
+		String transactionManagerName = "transactionManager$suffix"
+		if (shouldCreateTransactionalProxy(daoClass) && event.ctx.containsBean(transactionManagerName)) {
 			def beans = beans {
 				"${daoClass.fullName}DaoClass"(MethodInvokingFactoryBean) {
 					targetObject = ref("grailsApplication", true)
@@ -190,7 +195,7 @@ class DaoArtefactsGrailsPlugin {
 					}
 					proxyTargetClass = true
 					transactionAttributeSource = new GroovyAwareNamedTransactionAttributeSource(transactionalAttributes:props)
-					transactionManager = ref("transactionManager")
+					transactionManager = ref(transactionManagerName)
 				}
 			}
 			beans.registerBeans(event.ctx)
