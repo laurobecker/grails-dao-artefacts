@@ -16,10 +16,11 @@ import org.springframework.transaction.annotation.Transactional
 import br.com.organicadigital.daoartefacts.DaoArtefactClass
 import br.com.organicadigital.daoartefacts.DaoArtefactHandler
 import br.com.organicadigital.daoartefacts.DaoArtefactResourcesHandler
+import br.com.organicadigital.daoartefacts.DaoArtefactsUtil;
 import br.com.organicadigital.daoartefacts.SqlHandler
 
 class DaoArtefactsGrailsPlugin {
-	def version = "0.7"
+	def version = "0.11"
 	def grailsVersion = "2.0.4 > *"
 	def dependsOn = [:]
 	def loadAfter = ["hibernate"]
@@ -136,6 +137,10 @@ class DaoArtefactsGrailsPlugin {
 		}
 	}
 
+	def doWithDynamicMethods = { ctx ->
+		application.serviceClasses*.metaClass*.withSameConnection = DaoArtefactsUtil.&withSameConnection 
+	}
+	
 	/**
 	 *
 	 */
@@ -218,13 +223,11 @@ class DaoArtefactsGrailsPlugin {
 	 * @param daoClass
 	 */
 	void injectDynamicMethods(DaoArtefactClass daoClass) {
-		daoClass.metaClass.getSql = { new Sql(ApplicationHolder.getApplication().getMainContext().getBean("dataSource")) }
+		
+		daoClass.metaClass.getSql = DaoArtefactsUtil.&getSql
 
-		daoClass.metaClass.methodMissing = { String methodName, args ->
-			Sql s = getSql()
-			s.invokeMethod(methodName, args)
-			s.close()
-		}
+		daoClass.metaClass.methodMissing = DaoArtefactsUtil.&handleMethodMissing
+		
 	}
 
 	/**
