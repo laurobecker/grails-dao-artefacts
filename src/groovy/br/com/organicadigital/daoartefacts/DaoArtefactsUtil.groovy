@@ -28,7 +28,7 @@ class DaoArtefactsUtil {
 		
 		if( owner ) {
 			
-			Connection connection = getSessionFactory()?.currentSession?.connection
+			Connection connection = getSessionFactory()?.currentSession?.connection()
 			if(!connection) {
 				connection = getDataSource().connection
 			}
